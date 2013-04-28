@@ -53,3 +53,6 @@ if __name__ == "__main__":
     print len(items)
     for item in items:
         print item,"==",items[item]
+        print "----------",items[item]["resolved_url"]
+        #todo:(2013.4.29 0:20) 1.字符编码问题；2.抓取url对应的网页 3.发送email到wiz里面
+        #
