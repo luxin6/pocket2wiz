@@ -46,5 +46,10 @@ def add(config):
     return response
 if __name__ == "__main__":
     jc = JsonConfig(CONFIG_FILE)
+    print jc.read()
+    #items=retrieve(jc.read())
     items=retrieve(jc.config)
     print items
+    print len(items)
+    for item in items:
+        print item,"==",items[item]
