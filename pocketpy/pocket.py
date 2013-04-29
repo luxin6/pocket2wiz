@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 from jsonconfig import JsonConfig
 import sys
