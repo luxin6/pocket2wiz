@@ -56,5 +56,6 @@ if __name__ == "__main__":
         print index,"==",items[index]
         print "----url------",items[index]["resolved_url"]
         print "----title------",items[index]["given_title"]
-        #todo:(2013.4.29 0:20) 1.字符编码问题；2.抓取url对应的网页 3.发送email到wiz里面
+        #todone:(2013.4.29 0:20) 1.字符编码问题；2.抓取url对应的网页 3.发送email到wiz里面
         # done 1.编码问题
+        #done 2.抓取url对应的页面  in email_html.py
