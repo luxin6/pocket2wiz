@@ -8,7 +8,6 @@ class JsonConfig:
         self.config = config
 
     def read(self):
-        print 'a'
         if self.config:
             return self.config
         with open(self.fname, "rb") as infile:
