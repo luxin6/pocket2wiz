@@ -13,6 +13,13 @@ def crawler(url):
     print '============================================================'
     print '====================crawler done===================================='
     return html
+def transcode(subject):
+    if isinstance(subject,unicode):
+        subject=subject.encode('gb2312')
+    else:
+        subject=subject.decode('utf-8').encode('gb2312')
+    return subject
+
 
 # html=crawler("http://www.baidu.com")
 html=crawler("http://www.36kr.com/p/202917.html")
@@ -35,7 +42,9 @@ def smtp(fromadd='xxx@xx.com',toadd='',subject='',body=''):
     smtp.login('pocket2wiz@126.com','pocket')
     #格式信息
     body = base64.b64encode(body)
-    subject = base64.b64encode(subject)
+   # subject = base64.b64encode(subject)
+    subject=transcode(subject)
+
     msg = 'From:%s\nTo:%s\nSubject:%s\nContent-Type:text/html\nContent-Transfer-Encoding:base64\n\n%s'%(
         fromadd,toadd,subject,body
     )
