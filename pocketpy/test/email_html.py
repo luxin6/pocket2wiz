@@ -12,7 +12,8 @@ def crawler(url):
     print '============================================================'
     return html
 
-html=crawler("http://www.baidu.com")
+# html=crawler("http://www.baidu.com")
+html=crawler("http://www.36kr.com/p/202917.html")
 msg ="""From: From pocket<pocket2wiz@gmail.com>
 To: mywiz <luxin6@mywiz.cn>
 MIME-Version: 1.0
@@ -45,7 +46,7 @@ server = smtplib.SMTP('smtp.gmail.com',587) #port 465 or 587
 server.ehlo()
 server.starttls()
 server.ehlo()
-#server.login('pocket2wiz','luxin0987654321')#请替换成您的email和密码
+server.login('pocket2wiz','luxin0987654321')#请替换成您的email和密码
 server.sendmail('luxin6@mywiz.cn','luxin6@qq.com',msg)
 #todo : @mywiz.cn can not receive the email....
 server.close()
