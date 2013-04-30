@@ -24,11 +24,7 @@ def transcode(subject):
 # html=crawler("http://www.baidu.com")
 html=crawler("http://www.36kr.com/p/202917.html")
 msg ="""
-This is an e-mail message to be sent in HTML format
-
-<b>This is HTML message.</b>
-<h1>This is headline.</h1>
-<h2><a href="http://www.ueseo.org">优异搜索</a></h2>
+这个文章是由pocket2wiz直接从pocket转发 ：）
 """+html
 
 
