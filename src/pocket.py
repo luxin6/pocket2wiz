@@ -160,10 +160,13 @@ class Pocket(object):
         print "this article is not in wiz yet :(,hashid:",hashid
         return False
     def __transcode(self,subject):
-        if isinstance(subject,unicode):
-            subject=subject.encode('gb2312')
-        else:
-            subject=subject.decode('utf-8').encode('gb2312')
+        try:
+            if isinstance(subject,unicode):
+                subject=subject.encode('gb2312')
+            else:
+                subject=subject.decode('utf-8').encode('gb2312')
+        except UnicodeError,UnicodeEncodeError:
+            subject="unkown title...trans-code fail"
         return subject
 
     def __send2wiz(self,fromadd='xxx@xx.com',toadd='',subject='',body=''):
