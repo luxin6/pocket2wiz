@@ -63,7 +63,7 @@ class Article(object):
         print '=============get_content from',self.url,' done============================================='
         return self.content
     def get_hashid(self):
-        self.hash_id=hashlib.sha256(self.url).hexdigest()
+        self.hash_id=hashlib.md5(self.url).hexdigest()
         return self.hash_id
     def print_article(self):
         print "title",self.title,"url",self.url,"hash_id",self.hash_id
@@ -75,11 +75,14 @@ class Pocket(object):
         self.json_conf=JsonConfig(self.CONFIG_FILE)
         self.conf=self.json_conf.config
         self.article_list=[]
-        self.articleid_list=self.load_articleids()
+        self.articleid_list=[]
         self.pocket_controller=PocketApi(self.json_conf)
         #todone : 需要在硬盘保存一个hashid的文件，保证pocket里面的内容是不重复的
     def retrieve_article(self):
         print self.json_conf.read(),'--------------------'
+        # self.articleid_list=self.load_articleids()
+        self.load_articleids()
+        print "in func: retrieve_article() articleid_list:",self.articleid_list
         item_list=self.pocket_controller.retrieve()
         for item in item_list:
             article=Article()
@@ -104,13 +107,14 @@ class Pocket(object):
             article.print_article()
     def load_articleids(self):
         temp=open(self.articleids,'r')
-        try:
-            self.articleid_list=list(pickle.load(temp))
-            print "before we update from the pocket,there is ",len(self.articleid_list)," articles in wiz"
-        except EOFError:
+        self.articleid_list=list(pickle.load(temp))
+        print self.articleid_list
+        print "before we update from the pocket,there is ",len(self.articleid_list)," articles in wiz"
+        if len(self.articleid_list)==0 or self.articleid_list==None:
             print "the file ",self.articleids," is empty"
             self.articleid_list=[]
         temp.close()
+        # return self.articleid_list
     def dump_articleids(self):
         temp=open(self.articleids,'w')
         pickle.dump(self.articleid_list,temp)
@@ -118,8 +122,10 @@ class Pocket(object):
     def isexist_article(self,article):
         if self.articleid_list==None:
             self.articleid_list=[]
+            print "------the article list is none"
             return False
         hashid=article.get_hashid()
+        print "+++++++++",self.articleid_list,"++++++++++"
         for id in self.articleid_list:
             if hashid==id:
                 print "this article is aleady in wiz :),hashid:",hashid
@@ -131,7 +137,7 @@ class Pocket(object):
 if __name__ == "__main__":
     pocket=Pocket()
     pocket.retrieve_article()
-    pocket.print_article_1by1()
+#    pocket.print_article_1by1()
 
 # todo: 看一下getpocket的access_token是否有每日的使用次数
 # todo: 去除每次从pocket取文章的feature还未通过测试

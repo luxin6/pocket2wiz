@@ -37,3 +37,10 @@ print ag
 list2=list(ag)
 print list2
 gg.close()
+
+a1="ttt"
+b1="ttt"
+if a1==b1:
+    print "equal"
+else:
+    print "not equal"
