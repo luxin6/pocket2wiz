@@ -1,4 +1,6 @@
 import json
+import pickle
+import hashlib
 from jsonconfig import JsonConfig
 
 
@@ -9,7 +11,29 @@ jc.config = {'consumer_key': 'ttttttttt', 'access_token': 'yyyyyyyy'}
 jc.save()
 print jc.read()
 
+s="it is a str"
+print hashlib.sha256(s).hexdigest()
 
 a={'1':"11",'2':"22"}
 for tt in a:
     print tt,"===",a[tt]
+ff=open('hashid.txt','w')
+pickle.dump(a,ff)
+ff.close()
+gg=open('hashid.txt','r')
+ag=pickle.load(gg)
+print ag
+print ag['1'], ag['2']
+gg.close()
+
+
+a={'1',"11",'2',"22"}
+ff=open('hashidtt.txt','w')
+pickle.dump(a,ff)
+ff.close()
+gg=open('hashidtt.txt','r')
+ag=pickle.load(gg)
+print ag
+list2=list(ag)
+print list2
+gg.close()

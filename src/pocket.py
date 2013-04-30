@@ -4,14 +4,54 @@ from jsonconfig import JsonConfig
 import sys
 import requests
 import urllib2
+import hashlib
+import pickle
 
-CONFIG_FILE = '.creds'
+
 RETRIEVE_URL = "https://getpocket.com/v3/get"
 SEND_URL = "https://getpocket.com/v3/send"
 ADD_URL = "https://getpocket.com/v3/add"
 
+class PocketApi(object):
+    def __init__(self,json_config):
+        self.json_config=json_config
+    def retrieve(self):
+        print self.json_config,'======================='
+        response = requests.get(RETRIEVE_URL, params=self.json_config.config)
+        print response
+        items = response.json()['list']
+        return items
+
+
+    def modify(self):
+        if 'actions' not in self.json_config:
+            raise Exception('Actions are not in the request body')
+        headers = {'content-type': 'application/json',
+                   'X-Accept': 'application/json'}
+        payload = json.dumps(self.json_config)
+        response = requests.post(SEND_URL, headers=headers, data=payload)
+        if response.status_code not in range(200, 299):
+            print "Returned Status Code %d: %s" % (response.status_code,
+                                                   response.content)
+            sys.exit(1)
+        return response
+
+    def add(self):
+        if 'url' not in self.json_config:
+            raise Exception('"url" is not in the request body')
+        headers = {'content-type': 'application/json',
+                   'X-Accept': 'application/json'}
+        payload = json.dumps(self.json_config)
+        response = requests.post(ADD_URL, headers=headers, data=payload)
+        if response.status_code != 200:
+            print "Returned Status Code %d: %s" % (response.status_code,
+                                                   response.content)
+            sys.exit(1)
+        return response
+
 class Article(object):
     def __init__(self):
+        self.hash_id=""
         self.title=""
         self.url="www.baidu.com"
         self.content=""
@@ -22,56 +62,73 @@ class Article(object):
         self.content = response.read()
         print '=============get_content from',self.url,' done============================================='
         return self.content
+    def get_hashid(self):
+        self.hash_id=hashlib.sha256(self.url).hexdigest()
+        return self.hash_id
+    def print_article(self):
+        print "title",self.title,"url",self.url,"hash_id",self.hash_id
 
 class Pocket(object):
-    pass
+    def __init__(self):
+        self.CONFIG_FILE = '.creds'
+        self.articleids='.articleids'
+        self.json_conf=JsonConfig(self.CONFIG_FILE)
+        self.conf=self.json_conf.config
+        self.article_list=[]
+        self.articleid_list=self.load_articleids()
+        self.pocket_controller=PocketApi(self.json_conf)
+        #todo : 需要在硬盘保存一个hashid的文件，保证pocket里面的内容是不重复的
+    def retrieve_article(self):
+        print self.json_conf.read(),'--------------------'
+        item_list=self.pocket_controller.retrieve()
+        for item in item_list:
+            article=Article()
+            article.title=item_list[item]['given_title']
+            article.url=item_list[item]['resolved_url']
+            article.hash_id=article.get_hashid()
+            if not self.isexist_article(article):
+                print "this article is not exist in wiz"
+                article.print_article()
+                self.article_list.append(article)
+                self.articleid_list.append(article.hash_id)
+        # 保存article id到硬盘里面，每次取完文章之后必须做的
+        self.dump_articleids()
+        return self.article_list
+    def print_article(self):
+        print self.article_list
+    def print_article_1by1(self):
+        if self.article_list==None:
+            print "no article updated, please select more article into pocket :)"
+        print "print article 1by1,the article num is:",len(self.article_list)
+        for article in self.article_list:
+            article.print_article()
+    def load_articleids(self):
+        temp=open(self.articleids,'r')
+        try:
+            self.articleid_list=list(pickle.load(temp))
+            print "before we update from the pocket,there is ",len(self.articleid_list)," articles in wiz"
+        except EOFError:
+            print "the file ",self.articleids," is empty"
+            self.articleid_list=[]
+        temp.close()
+    def dump_articleids(self):
+        temp=open(self.articleids,'w')
+        pickle.dump(self.articleid_list,temp)
+        temp.close()
+    def isexist_article(self,article):
+        if self.articleid_list==None:
+            self.articleid_list=[]
+            return False
+        hashid=article.get_hashid()
+        for id in self.articleid_list:
+            if hashid==id:
+                print "this article is aleady in wiz :),hashid:",hashid
+                return True
+        print "this article is not in wiz yet :(,hashid:",hashid
+        return False
 
-def retrieve(config, verbose=False):
-    print 'a'
-    if verbose:
-        config["detailType"] = 'complete'
-    response = requests.get(RETRIEVE_URL, params=config)
-    print response
-    items = response.json()['list']
-    return items
 
-
-def modify(config):
-    if 'actions' not in config:
-        raise Exception('Actions are not in the request body')
-    headers = {'content-type': 'application/json',
-               'X-Accept': 'application/json'}
-    payload = json.dumps(config)
-    response = requests.post(SEND_URL, headers=headers, data=payload)
-    if response.status_code not in range(200, 299):
-        print "Returned Status Code %d: %s" % (response.status_code,
-                                               response.content)
-        sys.exit(1)
-    return response
-
-def add(config):
-    if 'url' not in config:
-        raise Exception('"url" is not in the request body')
-    headers = {'content-type': 'application/json',
-               'X-Accept': 'application/json'}
-    payload = json.dumps(config)
-    response = requests.post(ADD_URL, headers=headers, data=payload)
-    if response.status_code != 200:
-        print "Returned Status Code %d: %s" % (response.status_code,
-                                               response.content)
-        sys.exit(1)
-    return response
 if __name__ == "__main__":
-    jc = JsonConfig(CONFIG_FILE)
-    print jc.read()
-    #items=retrieve(jc.read())
-    items=retrieve(jc.config)
-    print items
-    print len(items)
-    for index in items:
-        print index,"==",items[index]
-        print "----url------",items[index]["resolved_url"]
-        print "----title------",items[index]["given_title"]
-        #todone:(2013.4.29 0:20) 1.字符编码问题；2.抓取url对应的网页 3.发送email到wiz里面
-        # done 1.编码问题
-        #done 2.抓取url对应的页面  in email_html.py
+    pocket=Pocket()
+    pocket.retrieve_article()
+    pocket.print_article_1by1()
