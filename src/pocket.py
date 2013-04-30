@@ -77,7 +77,7 @@ class Pocket(object):
         self.article_list=[]
         self.articleid_list=self.load_articleids()
         self.pocket_controller=PocketApi(self.json_conf)
-        #todo : 需要在硬盘保存一个hashid的文件，保证pocket里面的内容是不重复的
+        #todone : 需要在硬盘保存一个hashid的文件，保证pocket里面的内容是不重复的
     def retrieve_article(self):
         print self.json_conf.read(),'--------------------'
         item_list=self.pocket_controller.retrieve()
@@ -113,7 +113,7 @@ class Pocket(object):
         temp.close()
     def dump_articleids(self):
         temp=open(self.articleids,'w')
-        pickle.dump(sed_list,temp)
+        pickle.dump(self.articleid_list,temp)
         temp.close()
     def isexist_article(self,article):
         if self.articleid_list==None:
