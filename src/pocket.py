@@ -113,7 +113,7 @@ class Pocket(object):
         temp.close()
     def dump_articleids(self):
         temp=open(self.articleids,'w')
-        pickle.dump(self.articleid_list,temp)
+        pickle.dump(sed_list,temp)
         temp.close()
     def isexist_article(self,article):
         if self.articleid_list==None:
@@ -132,3 +132,7 @@ if __name__ == "__main__":
     pocket=Pocket()
     pocket.retrieve_article()
     pocket.print_article_1by1()
+
+# todo: 看一下getpocket的access_token是否有每日的使用次数
+# todo: 去除每次从pocket取文章的feature还未通过测试
+

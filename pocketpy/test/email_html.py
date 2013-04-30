@@ -48,6 +48,7 @@ server.starttls()
 server.ehlo()
 server.login('pocket2wiz','luxin0987654321')#请替换成您的email和密码
 server.sendmail('luxin6@mywiz.cn','luxin6@qq.com',msg)
-#todo : @mywiz.cn can not receive the email....
+#todone : @mywiz.cn can not receive the email....
+
 server.close()
 
