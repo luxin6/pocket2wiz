@@ -1,7 +1,6 @@
-import json
 import pickle
 import hashlib
-from jsonconfig import JsonConfig
+from pocketpy.test.jsonconfig import JsonConfig
 
 
 CONFIG_FILE = 'a.txt'

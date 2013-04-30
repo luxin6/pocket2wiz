@@ -4,7 +4,7 @@ import sys
 
 from optparse import OptionParser
 
-from jsonconfig import JsonConfig
+from pocketpy.test.jsonconfig import JsonConfig
 
 
 AUTH_URL = ("https://getpocket.com/auth/authorize?"

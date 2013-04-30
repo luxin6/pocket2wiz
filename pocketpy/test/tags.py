@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from pocket import modify
+from pocketpy.test.pocket import modify
 
 
 def tag_action(config, item_ids, tags, action):

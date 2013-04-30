@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
-from jsonconfig import JsonConfig
 import sys
 import requests
+
+from pocketpy.test.jsonconfig import JsonConfig
+
 
 CONFIG_FILE = '.creds'
 RETRIEVE_URL = "https://getpocket.com/v3/get"

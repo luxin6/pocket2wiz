@@ -6,6 +6,8 @@ import requests
 import urllib2
 import hashlib
 import pickle
+import smtplib
+import base64
 
 
 RETRIEVE_URL = "https://getpocket.com/v3/get"
@@ -75,6 +77,7 @@ class Pocket(object):
         self.json_conf=JsonConfig(self.CONFIG_FILE)
         self.conf=self.json_conf.config
         self.article_list=[]
+        #这个list是最终发送成功到wiz的文章list
         self.articleid_list=[]
         self.pocket_controller=PocketApi(self.json_conf)
         #todone : 需要在硬盘保存一个hashid的文件，保证pocket里面的内容是不重复的
@@ -93,10 +96,30 @@ class Pocket(object):
                 print "this article is not exist in wiz"
                 article.print_article()
                 self.article_list.append(article)
-                self.articleid_list.append(article.hash_id)
+        #        self.articleid_list.append(article.hash_id)
         # 保存article id到硬盘里面，每次取完文章之后必须做的
-        self.dump_articleids()
+        #self.dump_articleids()
         return self.article_list
+    def send_article(self):
+        if self.article_list==None or len(self.article_list)==0:
+            return
+        for article in self.article_list:
+            try:
+                title="[Pocket] "+article.title
+                html=article.get_content()
+                msg ="""
+                这个文章是由pocket2wiz直接从pocket转发 ：）
+                """+html
+                self.__send2wiz(fromadd='pocket2wiz@126.com',toadd='luxin6@mywiz.cn',subject=title,body=msg)
+                print "send article to wiz successful! title:",title
+            except UnicodeEncodeError,UnicodeError:
+                print "WARNING: the article is sended fail!.title:",article.title," url:",article.url
+                continue
+            self.articleid_list.append(article.get_hashid())
+        self.dump_articleids()
+
+        print "end of func send_article()"
+
     def print_article(self):
         print self.article_list
     def print_article_1by1(self):
@@ -107,9 +130,13 @@ class Pocket(object):
             article.print_article()
     def load_articleids(self):
         temp=open(self.articleids,'r')
-        self.articleid_list=list(pickle.load(temp))
-        print self.articleid_list
-        print "before we update from the pocket,there is ",len(self.articleid_list)," articles in wiz"
+        try:
+            self.articleid_list=list(pickle.load(temp))
+            print self.articleid_list
+            print "before we update from the pocket,there is ",len(self.articleid_list)," articles in wiz"
+        except EOFError:
+            print "the file ",self.articleids," is empty"
+            self.articleid_list=[]
         if len(self.articleid_list)==0 or self.articleid_list==None:
             print "the file ",self.articleids," is empty"
             self.articleid_list=[]
@@ -132,12 +159,39 @@ class Pocket(object):
                 return True
         print "this article is not in wiz yet :(,hashid:",hashid
         return False
+    def __transcode(self,subject):
+        if isinstance(subject,unicode):
+            subject=subject.encode('gb2312')
+        else:
+            subject=subject.decode('utf-8').encode('gb2312')
+        return subject
+
+    def __send2wiz(self,fromadd='xxx@xx.com',toadd='',subject='',body=''):
+        #初始化
+        smtp = smtplib.SMTP()
+        #链接服务器
+        smtp.connect('smtp.126.com',25)
+        #等录认证
+        smtp.login('pocket2wiz@126.com','pocket')
+        #格式信息
+        body = base64.b64encode(body)
+        # subject = base64.b64encode(subject)
+        subject=self.__transcode(subject)
+
+        msg = 'From:%s\nTo:%s\nSubject:%s\nContent-Type:text/html\nContent-Transfer-Encoding:base64\n\n%s'%(
+            fromadd,toadd,subject,body
+        )
+        #发送信息
+        smtp.sendmail(fromadd,toadd,msg)
+        #退出
+        smtp.quit()
 
 
 if __name__ == "__main__":
     pocket=Pocket()
     pocket.retrieve_article()
 #    pocket.print_article_1by1()
+    pocket.send_article()
 
 # todo: 看一下getpocket的access_token是否有每日的使用次数
 # todo: 去除每次从pocket取文章的feature还未通过测试
